@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
@@ -21,38 +22,41 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        $token = $user->createToken('MyAppToken')->plainTextToken;
-
         return response()->json([
-            'user' => new UserResource($user),
-            'token' => $token,
+            'message' => 'Usuário registrado com sucesso',
+            'data' => new UserResource($user),
         ], 201);
     }
 
     public function login(LoginRequest $request): JsonResponse
     {
-        if (! Auth::attempt($request->only('email', 'password'))) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user || !Hash::check($request->password, $user->password)) {
+            return response()->json(['message' => 'Credenciais inválidas'], 401);
         }
 
-        $user = Auth::user();
-        $token = $user->createToken('MyAppToken')->plainTextToken;
+        $token = $user->createToken($request->device_name)->plainTextToken;
 
         return response()->json([
+            'message' => 'Login realizado com sucesso',
+            'access_token' => $token,
+            'token_type' => 'Bearer',
             'user' => new UserResource($user),
-            'token' => $token,
         ]);
     }
 
-    public function profile(): UserResource
+    public function me(Request $request)
     {
-        return new UserResource(Auth::user());
+        return new UserResource($request->user());
     }
 
-    public function logout(): JsonResponse
+    public function logout(Request $request): JsonResponse
     {
-        Auth::user()->currentAccessToken()->delete();
+        $request->user()->currentAccessToken()->delete();
 
-        return response()->json(['message' => 'Successfully logged out']);
+        return response()->json([
+            'message' => 'Logout realizado com sucesso'
+        ]);
     }
 }

@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UserController;
 
 Route::get('/', function () {
     $routes = collect(app('router')->getRoutes())->filter(function ($route) {
@@ -20,4 +21,4 @@ Route::get('/', function () {
     );
 });
 
-include __DIR__ . '/auth.php';
+Route::apiResource('users', UserController::class);

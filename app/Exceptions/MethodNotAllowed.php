@@ -14,29 +14,27 @@ class MethodNotAllowed extends Exception
      */
     public function render(Request $request)
     {
-        if ($request->is('api/*')) {
-            $routes = app('router')->getRoutes();
-            $allowedMethods = [];
+        $routes = app('router')->getRoutes();
+        $allowedMethods = [];
 
-            $requestPath = trim($request->path(), '/');
+        $requestPath = trim($request->path(), '/');
 
-            foreach ($routes as $route) {
-                $routeUri = trim($route->uri(), '/');
+        foreach ($routes as $route) {
+            $routeUri = trim($route->uri(), '/');
 
-                if (Str::is($routeUri, $requestPath)) { 
-                    $allowedMethods = array_merge($allowedMethods, $route->methods());
-                }
+            if (Str::is($routeUri, $requestPath)) {
+                $allowedMethods = array_merge($allowedMethods, $route->methods());
             }
-
-            $allowedMethods = array_values(array_unique($allowedMethods));
-
-            return (new ErrorResource([
-                'error' => 'Método não permitido',
-                'message' => 'Este método não é permitido.',
-                'details' => [
-                    'allowed_methods' => $allowedMethods
-                ]
-            ]))->response()->setStatusCode(405);
         }
+
+        $allowedMethods = array_values(array_unique($allowedMethods));
+
+        return (new ErrorResource([
+            'error' => 'Método não permitido',
+            'message' => 'Este método não é permitido.',
+            'details' => [
+                'allowed_methods' => $allowedMethods
+            ]
+        ]))->response()->setStatusCode(405)->setEncodingOptions(JSON_UNESCAPED_UNICODE);
     }
 }

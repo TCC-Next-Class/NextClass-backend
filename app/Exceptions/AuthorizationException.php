@@ -6,7 +6,7 @@ use Exception;
 use Illuminate\Http\Request;
 use App\Http\Resources\ErrorResource;
 
-class UnauthorizedException extends Exception
+class AuthorizationException extends Exception
 {
     /**
      * Render the exception as an HTTP response.
@@ -15,7 +15,7 @@ class UnauthorizedException extends Exception
     {
         return (new ErrorResource([
             'error' => 'Não autorizado',
-            'message' => $this->getMessage() ?: 'Você não está autenticado.'
+            'message' => $this->getMessage() ?: 'Você não tem permissão para acessar este recurso.'
         ]))->response()->setStatusCode(401)->setEncodingOptions(JSON_UNESCAPED_UNICODE);
     }
 }

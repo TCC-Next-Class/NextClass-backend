@@ -13,11 +13,9 @@ class NotFoundException extends Exception
      */
     public function render(Request $request)
     {
-        if ($request->is('api/*')) {
-            return (new ErrorResource([
-                'error' => 'Recurso não encontrado',
-                'message' => "Rota '{$request->path()}' não encontrada.",
-            ]))->response()->setStatusCode(404);
-        }
+        return (new ErrorResource([
+            'error' => 'Recurso não encontrado',
+            'message' => "Rota '{$request->path()}' não encontrada.",
+        ]))->response()->setStatusCode(404)->setEncodingOptions(JSON_UNESCAPED_UNICODE);
     }
 }

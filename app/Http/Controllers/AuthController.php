@@ -13,13 +13,10 @@ class AuthController extends Controller
 {
     public function token(Request $request)
     {
-        // $request->validate([
-        //     'email' => 'required|email',
-        //     'password' => 'required',
-        // ]);
-
-        $request['email'] = 'a@a.com';
-        $request['password'] = '12345678';
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
 
         $request->merge(['email' => strtolower($request->input('email'))]);
 

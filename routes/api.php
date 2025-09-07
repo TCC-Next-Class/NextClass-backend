@@ -25,7 +25,7 @@ Route::get('/', function () {
 Route::apiResource('users', UserController::class);
 
 Route::controller(AuthController::class)->group(function () {
-    Route::get('token', 'token');
+    Route::post('token', 'token');
     Route::post('refresh', 'token/refresh');
     Route::get('me', 'me')->middleware('auth:sanctum');
 });

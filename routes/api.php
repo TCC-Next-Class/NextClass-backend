@@ -1,7 +1,8 @@
 <?php
 
+namespace App\Http\Controllers;
+
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\UserController;
 
 Route::get('/', function () {
     $routes = collect(app('router')->getRoutes())->filter(function ($route) {
@@ -22,3 +23,9 @@ Route::get('/', function () {
 });
 
 Route::apiResource('users', UserController::class);
+
+Route::controller(AuthController::class)->group(function () {
+    Route::get('token', 'token');
+    Route::post('refresh', 'token/refresh');
+    Route::get('me', 'me')->middleware('auth:sanctum');
+});

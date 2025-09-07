@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Resources\ErrorResource;
 use Illuminate\Support\Str;
 
-class MethodNotAllowed extends Exception
+class MethodNotAllowedException extends Exception
 {
     /**
      * Render the exception as an HTTP response.

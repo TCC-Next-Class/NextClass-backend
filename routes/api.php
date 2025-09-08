@@ -23,9 +23,6 @@ Route::get('/', function () {
 });
 
 Route::apiResource('users', UserController::class);
+Route::apiResource('sessions', SessionController::class);
 
-Route::controller(AuthController::class)->group(function () {
-    Route::post('token', 'token');
-    Route::post('refresh', 'token/refresh');
-    Route::get('me', 'me')->middleware('auth:sanctum');
-});
+Route::get('me', [UserController::class, 'me'])->middleware('auth:sanctum');

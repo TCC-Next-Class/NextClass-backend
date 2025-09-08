@@ -11,41 +11,36 @@ use App\Http\Resources\UserResource;
 
 class AuthController extends Controller
 {
-    public function token(Request $request)
+    public function index(Request $request)
+    {
+        return new UserResource($request->user());
+    }
+
+    public function store(Request $request)
     {
         $request->validate([
             'email' => 'required|email',
             'password' => 'required',
         ]);
 
-        $request->merge(['email' => strtolower($request->input('email'))]);
-
         if (!Auth::attempt($request->only('email', 'password'))) {
             return response()->json(['message' => 'Credenciais inválidas'], 401);
         }
 
         $user = $request->user();
+        $agent = new Agent();
+        $device = $agent->device() ?: 'Dispositivo desconhecido';
+        $ip = $request->ip();
+        $userAgent = $request->userAgent();
 
-        $accessToken = $user->createToken('access', ['*']);
         $accessTokenExpiresAt = Carbon::now()->addMinutes(config('auth.config.token_lifetime', 15));
-
-        $refreshToken = $user->createToken('refresh', ['refresh']);
         $refreshTokenExpiresAt = Carbon::now()->addMinutes(config('auth.config.refresh_token_lifetime', 10080));
 
-        $accessToken->accessToken->update([
-            'type' => 'access',
-            'expires_at' => $accessTokenExpiresAt,
-            'device_name' => (new Agent())->device(),
-            'device_ip' => $request->ip(),
-            'device_agent' => $request->userAgent()
-        ]);
-        $refreshToken->accessToken->update([
-            'type' => 'refresh',
-            'expires_at' => $refreshTokenExpiresAt,
-            'device_name' => (new Agent())->device(),
-            'device_ip' => $request->ip(),
-            'device_agent' => $request->userAgent()
-        ]);
+        $accessToken = $user->createToken('access', ['*']);
+        $refreshToken = $user->createToken('refresh', ['refresh']);
+
+        $this->updateTokenMeta($accessToken->accessToken, 'access', $accessTokenExpiresAt, $device, $ip, $userAgent);
+        $this->updateTokenMeta($refreshToken->accessToken, 'refresh', $refreshTokenExpiresAt, $device, $ip, $userAgent);
 
         return response()->json([
             'access_token' => $accessToken->plainTextToken,
@@ -55,14 +50,13 @@ class AuthController extends Controller
         ]);
     }
 
-    public function refresh(Request $request)
+    public function update(Request $request)
     {
         $request->validate([
             'refresh_token' => 'required|string',
         ]);
 
-        $refreshToken = $request->input('refresh_token');
-        $tokenModel = PersonalAccessToken::findToken($refreshToken);
+        $tokenModel = PersonalAccessToken::findToken($request->input('refresh_token'));
 
         if (!$tokenModel || $tokenModel->type !== 'refresh') {
             return response()->json(['message' => 'Refresh token inválido'], 401);
@@ -74,26 +68,36 @@ class AuthController extends Controller
         }
 
         $user = $tokenModel->tokenable;
+        $agent = new Agent();
+        $device = $agent->device() ?: 'Dispositivo desconhecido';
+        $ip = $request->ip();
+        $userAgent = $request->userAgent();
 
-        $accessToken = $user->createToken('access', ['*'])->plainTextToken;
         $accessTokenExpiresAt = Carbon::now()->addMinutes(config('auth.config.token_lifetime', 15));
-
-        $accessToken->update([
-            'type' => 'access',
-            'expires_at' => $accessTokenExpiresAt,
-            'device_name' => (new Agent())->device(),
-            'device_ip' => $request->ip(),
-            'device_agent' => $request->userAgent()
-        ]);
+        $accessToken = $user->createToken('access', ['*']);
+        $this->updateTokenMeta($accessToken->accessToken, 'access', $accessTokenExpiresAt, $device, $ip, $userAgent);
 
         return response()->json([
-            'access_token' => $accessToken,
+            'access_token' => $accessToken->plainTextToken,
             'access_token_expires_at' => $accessTokenExpiresAt,
         ]);
     }
 
-    public function me(Request $request)
+    public function destroy(Request $request)
     {
-        return new UserResource($request->user());
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json(['message' => 'Logout realizado com sucesso']);
+    }
+
+    private function updateTokenMeta(PersonalAccessToken $token, string $type, Carbon $expiresAt, string $device, string $ip, string $userAgent): void
+    {
+        $token->update([
+            'type'         => $type,
+            'expires_at'   => $expiresAt,
+            'device_name'  => $device,
+            'device_ip'    => $ip,
+            'device_agent' => $userAgent,
+        ]);
     }
 }

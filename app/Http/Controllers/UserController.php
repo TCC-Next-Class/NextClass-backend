@@ -7,6 +7,7 @@ use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\UserCollection;
+use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
@@ -53,8 +54,9 @@ class UserController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(User $user)
+    public function destroy(Request $request)
     {
-        User::find($user->id)->delete();
+        $request->user()->currentAccessToken()->delete();
+        return response()->json(['message' => 'Token revogado']);
     }
 }

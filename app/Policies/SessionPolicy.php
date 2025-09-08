@@ -2,7 +2,7 @@
 
 namespace App\Policies;
 
-use App\Models\Session;
+use App\Models\PersonalAccessToken as Session;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
@@ -13,7 +13,7 @@ class SessionPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -21,15 +21,15 @@ class SessionPolicy
      */
     public function view(User $user, Session $session): bool
     {
-        return false;
+        return $user->id === $session->tokenable_id;
     }
 
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user): bool
+    public function create(?User $user): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -45,22 +45,6 @@ class SessionPolicy
      */
     public function delete(User $user, Session $session): bool
     {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Session $session): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Session $session): bool
-    {
-        return false;
+        return $user->id === $session->tokenable_id;
     }
 }

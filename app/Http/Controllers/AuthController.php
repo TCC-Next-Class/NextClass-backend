@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Laravel\Sanctum\PersonalAccessToken;
-use Jenssegers\Agent\Agent;
 use App\Http\Resources\UserResource;
 
 class AuthController extends Controller

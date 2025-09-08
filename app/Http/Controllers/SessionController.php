@@ -8,12 +8,14 @@ use App\Http\Resources\SessionCollection;
 use App\Http\Resources\SessionResource;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Jenssegers\Agent\Agent;
 
 class SessionController extends Controller
 {
     public function __construct()
     {
         $this->authorizeResource(Session::class, 'session');
+        $this->middleware('auth:sanctum')->except(['store']);
     }
     /**
      * Display a listing of the resource.
@@ -34,20 +36,13 @@ class SessionController extends Controller
         $ip = $request->ip();
         $userAgent = $request->userAgent();
 
-        $accessTokenExpiresAt = Carbon::now()->addMinutes(config('auth.config.token_lifetime', 15));
-        $refreshTokenExpiresAt = Carbon::now()->addMinutes(config('auth.config.refresh_token_lifetime', 10080));
+        $accessToken = $user->createToken($device, ['*']);
 
-        $accessToken = $user->createToken('access', ['*']);
-        $refreshToken = $user->createToken('refresh', ['refresh']);
-
-        $this->updateTokenMeta($accessToken->accessToken, 'access', $accessTokenExpiresAt, $device, $ip, $userAgent);
-        $this->updateTokenMeta($refreshToken->accessToken, 'refresh', $refreshTokenExpiresAt, $device, $ip, $userAgent);
+        $this->updateTokenMeta($accessToken->accessToken, 'access', $device, $ip, $userAgent);
 
         return response()->json([
             'access_token' => $accessToken->plainTextToken,
-            'access_token_expires_at' => $accessTokenExpiresAt,
-            'refresh_token' => $refreshToken->plainTextToken,
-            'refresh_token_expires_at' => $refreshTokenExpiresAt,
+            'access_token_expires_at' => config('sanctum.expiration') ? Carbon::now()->addMinutes(config('sanctum.expiration')) : null,
         ]);
     }
 
@@ -74,5 +69,15 @@ class SessionController extends Controller
         $request->user()->currentAccessToken()->delete();
 
         return response()->json(['message' => 'Session revoked']);
+    }
+
+    private function updateTokenMeta(Session $session, string $type, string $device, string $ip, string $userAgent): void
+    {
+        $session->update([
+            'type'         => $type,
+            'device_name'  => $device,
+            'device_ip'    => $ip,
+            'device_agent' => $userAgent,
+        ]);
     }
 }

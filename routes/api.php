@@ -24,5 +24,6 @@ Route::get('/', function () {
 
 Route::apiResource('users', UserController::class);
 Route::apiResource('sessions', SessionController::class);
+Route::post('sessions/revoke', [SessionController::class, 'revoke']);
 
 Route::get('me', [UserController::class, 'me'])->middleware('auth:sanctum');

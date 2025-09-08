@@ -2,11 +2,6 @@
 
 return [
 
-    'config' => [
-        'token_lifetime' => 15,
-        'refresh_token_lifetime' => 10080,
-    ],
-
     /*
     |--------------------------------------------------------------------------
     | Authentication Defaults

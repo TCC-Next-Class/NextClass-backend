@@ -18,9 +18,9 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return new UserCollection(User::paginate($this->resolvePerPage(request())));
+        return new UserCollection(User::paginate($this->resolvePerPage($request)));
     }
 
     /**
@@ -56,7 +56,13 @@ class UserController extends Controller
      */
     public function destroy(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
-        return response()->json(['message' => 'Token revogado']);
+        $request->user()->delete();
+
+        return response()->json(['message' => 'User deleted']);
+    }
+
+    public function me(Request $request)
+    {
+        return new UserResource($request->user());
     }
 }

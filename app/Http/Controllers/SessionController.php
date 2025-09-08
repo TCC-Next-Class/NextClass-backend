@@ -2,26 +2,25 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Session;
+use App\Models\PersonalAccessToken as Session;
 use App\Http\Requests\StoreSessionRequest;
-use App\Http\Requests\UpdateSessionRequest;
+use App\Http\Resources\SessionCollection;
+use App\Http\Resources\SessionResource;
+use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class SessionController extends Controller
 {
+    public function __construct()
+    {
+        $this->authorizeResource(Session::class, 'session');
+    }
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        return new SessionCollection($request->user()->tokens()->paginate($this->resolvePerPage($request)));
     }
 
     /**
@@ -29,7 +28,27 @@ class SessionController extends Controller
      */
     public function store(StoreSessionRequest $request)
     {
-        //
+        $user = $request->user();
+        $agent = new Agent();
+        $device = $agent->device() ?: 'Dispositivo desconhecido';
+        $ip = $request->ip();
+        $userAgent = $request->userAgent();
+
+        $accessTokenExpiresAt = Carbon::now()->addMinutes(config('auth.config.token_lifetime', 15));
+        $refreshTokenExpiresAt = Carbon::now()->addMinutes(config('auth.config.refresh_token_lifetime', 10080));
+
+        $accessToken = $user->createToken('access', ['*']);
+        $refreshToken = $user->createToken('refresh', ['refresh']);
+
+        $this->updateTokenMeta($accessToken->accessToken, 'access', $accessTokenExpiresAt, $device, $ip, $userAgent);
+        $this->updateTokenMeta($refreshToken->accessToken, 'refresh', $refreshTokenExpiresAt, $device, $ip, $userAgent);
+
+        return response()->json([
+            'access_token' => $accessToken->plainTextToken,
+            'access_token_expires_at' => $accessTokenExpiresAt,
+            'refresh_token' => $refreshToken->plainTextToken,
+            'refresh_token_expires_at' => $refreshTokenExpiresAt,
+        ]);
     }
 
     /**
@@ -37,23 +56,7 @@ class SessionController extends Controller
      */
     public function show(Session $session)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Session $session)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateSessionRequest $request, Session $session)
-    {
-        //
+        return new SessionResource($session);
     }
 
     /**
@@ -61,6 +64,15 @@ class SessionController extends Controller
      */
     public function destroy(Session $session)
     {
-        //
+        $session->delete();
+
+        return response()->json(['message' => 'Session deleted']);
+    }
+
+    public function revoke(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json(['message' => 'Session revoked']);
     }
 }

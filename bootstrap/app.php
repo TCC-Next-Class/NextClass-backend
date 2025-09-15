@@ -40,5 +40,9 @@ return Application::configure(basePath: dirname(__DIR__))
                     $e->getIds()
                 );
             });
+            $exceptions->dontReport([
+                AuthenticationException::class,
+                UnauthorizedException::class,
+            ]);
         }
     })->create();

@@ -31,10 +31,11 @@ class SessionController extends Controller
     public function store(StoreSessionRequest $request)
     {
         $user = $request->user();
-        $agent = new Agent();
-        $device = $agent->device() ?: 'Dispositivo desconhecido';
+        //$agent = new Agent();
+        //$device = $agent->device() ?: 'Dispositivo desconhecido';
         $ip = $request->ip();
         $userAgent = $request->userAgent();
+        $device = 'null';
 
         $accessToken = $user->createToken($device, ['*']);
 

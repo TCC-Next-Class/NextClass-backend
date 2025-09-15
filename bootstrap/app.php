@@ -26,6 +26,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api(
             prepend: ForceJsonResponse::class
         );
+        $middleware->api(
+            prepend: \Illuminate\Http\Middleware\HandleCors::class,
+        );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         if (request()->is('api/*')) {

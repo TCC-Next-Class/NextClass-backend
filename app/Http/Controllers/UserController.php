@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\UserCollection;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
@@ -46,6 +47,7 @@ class UserController extends Controller
      */
     public function update(UpdateUserRequest $request, User $user)
     {
+
         $user->update($request->validated());
 
         return new UserResource($user);
@@ -64,5 +66,18 @@ class UserController extends Controller
     public function me(Request $request)
     {
         return new UserResource($request->user());
+    }
+
+    public function search(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        $user = User::where('email', $request->email)
+            ->select('name', 'email', 'avatar') 
+            ->firstOrFail();
+
+        return response()->json($user, 200);
     }
 }

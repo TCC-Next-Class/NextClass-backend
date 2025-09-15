@@ -23,6 +23,9 @@ class SessionResource extends JsonResource
             'last_used_at' => $this->last_used_at,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
+            'device_name' => $this->device_name,
+            'device_ip' => $this->device_ip,
+            'device_agent' => $this->device_agent,
             'is_current' => $token && $this->id === $token->id,
         ];
     }

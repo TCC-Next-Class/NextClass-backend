@@ -1,11 +1,183 @@
 {
     "openapi": "3.0.0",
     "info": {
-        "title": "API de Usuários",
-        "description": "API para gerenciamento de usuários com validação de CPF",
+        "title": "API NextClass",
+        "description": "API do sistema NextClass",
         "version": "1.0.0"
     },
     "paths": {
+        "/api/sessions": {
+            "get": {
+                "tags": [
+                    "Sessões"
+                ],
+                "summary": "Listar sessões ativas do usuário autenticado",
+                "operationId": "f4b560641072155d2baf3505a66950e3",
+                "responses": {
+                    "200": {
+                        "description": "Lista de sessões",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Session"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autorizado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Sessões"
+                ],
+                "summary": "Criar nova sessão (login)",
+                "operationId": "e0239d388b5f8231ddec4b8fd666e4f8",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "matheus@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "senha123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Sessão criada com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SessionTokenResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Credenciais inválidas"
+                    }
+                }
+            }
+        },
+        "/api/sessions/{id}": {
+            "get": {
+                "tags": [
+                    "Sessões"
+                ],
+                "summary": "Exibir detalhes de uma sessão",
+                "operationId": "6f147a1ba4c30056a7a9347d1e220b5e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID da sessão",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Dados da sessão",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Session"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Sessão não encontrada"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Sessões"
+                ],
+                "summary": "Deletar sessão específica",
+                "operationId": "688effea4e6581b82158b56a7932e560",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID da sessão",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Sessão deletada"
+                    },
+                    "404": {
+                        "description": "Sessão não encontrada"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/sessions/revoke": {
+            "post": {
+                "tags": [
+                    "Sessões"
+                ],
+                "summary": "Revogar sessão atual",
+                "operationId": "d18b9843ba38d632d01b45ae43d32017",
+                "responses": {
+                    "200": {
+                        "description": "Sessão atual revogada"
+                    },
+                    "401": {
+                        "description": "Não autorizado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/users": {
             "get": {
                 "tags": [
@@ -42,35 +214,36 @@
                             "schema": {
                                 "required": [
                                     "name",
+                                    "cpf",
                                     "email",
                                     "password",
-                                    "password_confirmation",
-                                    "cpf"
+                                    "password_confirmation"
                                 ],
                                 "properties": {
                                     "name": {
                                         "type": "string",
                                         "maxLength": 255,
-                                        "example": "Matheus Lopes"
+                                        "example": "Foo Bar"
+                                    },
+                                    "cpf": {
+                                        "type": "string",
+                                        "example": "987.654.321-00"
                                     },
                                     "email": {
                                         "type": "string",
                                         "format": "email",
                                         "maxLength": 255,
-                                        "example": "matheus@example.com"
+                                        "example": "foo.bar@example.com"
                                     },
                                     "password": {
                                         "type": "string",
                                         "minLength": 8,
-                                        "example": "senha123"
+                                        "example": "password"
                                     },
                                     "password_confirmation": {
                                         "type": "string",
-                                        "example": "senha123"
-                                    },
-                                    "cpf": {
-                                        "type": "string",
-                                        "example": "123.456.789-00"
+                                        "minLength": 8,
+                                        "example": "password"
                                     }
                                 },
                                 "type": "object"
@@ -80,17 +253,54 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Usuário criado com sucesso"
+                        "description": "Usuário criado com sucesso",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer",
+                                            "example": 1
+                                        },
+                                        "name": {
+                                            "type": "string",
+                                            "example": "Foo Bar"
+                                        },
+                                        "email": {
+                                            "type": "string",
+                                            "format": "email",
+                                            "example": "foo.bar@example.com"
+                                        },
+                                        "cpf": {
+                                            "type": "string",
+                                            "example": "987.654.321-00"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
                     "422": {
-                        "description": "Erro de validação"
+                        "description": "Erro de validação",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The given data was invalid."
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
+                }
             }
         },
         "/api/users/{id}": {
@@ -153,22 +363,22 @@
                                     "name": {
                                         "type": "string",
                                         "maxLength": 255,
-                                        "example": "Matheus Duarte"
+                                        "example": "Foo Bar"
                                     },
                                     "email": {
                                         "type": "string",
                                         "format": "email",
                                         "maxLength": 255,
-                                        "example": "matheus.duarte@example.com"
+                                        "example": "foo.bar@example.com"
                                     },
                                     "password": {
                                         "type": "string",
                                         "minLength": 8,
-                                        "example": "novaSenha123"
+                                        "example": "password"
                                     },
                                     "password_confirmation": {
                                         "type": "string",
-                                        "example": "novaSenha123"
+                                        "example": "password"
                                     },
                                     "cpf": {
                                         "type": "string",
@@ -228,10 +438,257 @@
                         "bearerAuth": []
                     }
                 ]
+            },
+            "patch": {
+                "tags": [
+                    "Usuários"
+                ],
+                "summary": "Atualizar parcialmente um usuário",
+                "description": "Atualiza apenas alguns dados de um usuário existente",
+                "operationId": "8103085b2b1b774f576f2ee074b3dc1a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID do usuário",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "maxLength": 255,
+                                        "example": "Foo Bar"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "maxLength": 255,
+                                        "example": "foo.bar@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "minLength": 8,
+                                        "example": "password"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "example": "password"
+                                    },
+                                    "cpf": {
+                                        "type": "string",
+                                        "example": "987.654.321-00"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Usuário atualizado parcialmente com sucesso"
+                    },
+                    "404": {
+                        "description": "Usuário não encontrado"
+                    },
+                    "422": {
+                        "description": "Erro de validação"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/me": {
+            "get": {
+                "tags": [
+                    "Usuários"
+                ],
+                "summary": "Obter informações do usuário autenticado",
+                "operationId": "d09b8e0a48be5f1882d82827c69ed059",
+                "responses": {
+                    "200": {
+                        "description": "Dados do usuário autenticado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Não autorizado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/users/search": {
+            "get": {
+                "tags": [
+                    "Usuários"
+                ],
+                "summary": "Buscar usuário pelo e-mail",
+                "description": "Verifica se um usuário existe a partir do e-mail e retorna dados públicos (nome, avatar, etc.)",
+                "operationId": "f07f313e9550d88832db224125b9a323",
+                "parameters": [
+                    {
+                        "name": "email",
+                        "in": "query",
+                        "description": "E-mail do usuário a ser pesquisado",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "email",
+                            "example": "john.doe@example.com"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Usuário encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "user": {
+                                            "properties": {
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "John Doe"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "format": "email",
+                                                    "example": "john.doe@example.com"
+                                                },
+                                                "avatar": {
+                                                    "type": "string",
+                                                    "example": "https://cdn.example.com/avatars/12.png"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Usuário não encontrado",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "User": {
+                "title": "Usuário",
+                "required": [
+                    "id",
+                    "name",
+                    "email",
+                    "cpf"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Matheus Lopes"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "example": "matheus@example.com"
+                    },
+                    "cpf": {
+                        "type": "string",
+                        "example": "123.456.789-00"
+                    }
+                },
+                "type": "object"
+            },
+            "Session": {
+                "title": "Sessão",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "device_name": {
+                        "type": "string",
+                        "example": "PC Desktop"
+                    },
+                    "device_ip": {
+                        "type": "string",
+                        "example": "192.168.0.100"
+                    },
+                    "device_agent": {
+                        "type": "string",
+                        "example": "Mozilla/5.0"
+                    }
+                },
+                "type": "object"
+            },
+            "SessionTokenResponse": {
+                "title": "Resposta da criação de sessão",
+                "properties": {
+                    "access_token": {
+                        "type": "string",
+                        "example": "01994a21-8e00-7047-bc50-635f6f9262e6|N1E5DKLXjnApDw5ckFaTgRAIEwxs7uu2yaeQWE4X57d9263e"
+                    },
+                    "access_token_expires_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-09-10T16:00:00Z",
+                        "nullable": true
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
             }
         }
     },
     "tags": [
+        {
+            "name": "Sessões",
+            "description": "Sessões"
+        },
         {
             "name": "Usuários",
             "description": "Usuários"

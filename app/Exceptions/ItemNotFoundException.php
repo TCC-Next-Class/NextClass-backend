@@ -28,7 +28,7 @@ class ItemNotFoundException extends Exception
             'message' => "Item '{$request->path()}' não encontrado.",
             'details' => [
                 'model' => $this->model,
-                'ids' => $this->ids,
+                'id' => $this->ids[0] ?? null,
             ]
         ]))->response()->setStatusCode(404)->setEncodingOptions(JSON_UNESCAPED_UNICODE);
     }

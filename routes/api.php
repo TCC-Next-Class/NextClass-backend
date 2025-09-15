@@ -22,6 +22,7 @@ Route::get('/', function () {
     );
 });
 
+Route::get('users/search', [UserController::class, 'search']);
 Route::apiResource('users', UserController::class);
 Route::apiResource('sessions', SessionController::class);
 Route::post('sessions/revoke', [SessionController::class, 'revoke']);

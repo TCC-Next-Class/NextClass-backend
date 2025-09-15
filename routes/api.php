@@ -28,3 +28,6 @@ Route::apiResource('sessions', SessionController::class);
 Route::post('sessions/revoke', [SessionController::class, 'revoke']);
 
 Route::get('me', [UserController::class, 'me'])->middleware('auth:sanctum');
+
+Route::apiResource('tickets', TicketsController::class)->middleware('auth:sanctum');
+Route::post('/tickets/{uuid}/use', [TicketsController::class, 'use']);

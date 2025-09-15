@@ -6,6 +6,8 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
+use function Laravel\Prompts\error;
+
 class StoreSessionRequest extends FormRequest
 {
     /**
@@ -47,7 +49,9 @@ class StoreSessionRequest extends FormRequest
     {
         throw new HttpResponseException(
             response()->json([
-                'message' => 'Credenciais inválidas.'
+                'errors' => [
+                    'password' => 'Credenciais inválidas.'
+                ]
             ], 401)
         );
     }

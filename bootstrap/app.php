@@ -13,7 +13,7 @@ use App\Exceptions\UnauthorizedException;
 use App\Exceptions\MethodNotAllowedException;
 use App\Exceptions\AuthorizationException as AppAuthorizationException;
 use App\Exceptions\ItemNotFoundException;
-use App\Http\Middleware\ForceJsonResponse;
+use Illuminate\Http\Middleware\HandleCors;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -24,10 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->api(
-            prepend: ForceJsonResponse::class
-        );
-        $middleware->api(
-            prepend: \Illuminate\Http\Middleware\HandleCors::class,
+            prepend: HandleCors::class,
         );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
